@@ -1,76 +1,57 @@
 # 🛠️ Ferrox-Py-Utils (Data Engineering)
 
-<p align="center">
-  <b>Scaffolding e Utils per Data Platform e Pipeline ETL</b><br/>
-  <i>Costruisci pipeline dati solide, riutilizzabili e indipendenti dal vendor cloud, seguendo la filosofia modulare di Ferrox-Py.</i>
-</p>
+## 1. Overview (What does this do?)
+The `ferrox-py-utils` package is a specialized extension of the Ferrox ecosystem dedicated to data manipulation, ETL (Extract, Transform, Load) pipelines, and cross-platform data movement. It provides agnostic `Connectors` (e.g., for AWS S3, CSV files, or REST APIs) and a `PipelineOrchestrator` to seamlessly sequence data transformation jobs without writing monolithic scripts.
 
----
+## 2. Philosophy (Why does it exist?)
+Data engineering often suffers from "wild copy-pasting" where scripts to import users or export CSVs are hastily written and tightly coupled to specific database schemas or cloud vendors. The philosophy here is absolute **agnosticism**. Instead of building monolithic ETL scripts, this package enforces a modular approach where small, isolated tasks are injected into an orchestrator. This allows data engineers to reuse extraction and validation logic across entirely different projects.
 
-## 1. Cosa fa questo pacchetto? (Overview)
-`ferrox-py-utils` è un'estensione dell'ecosistema Ferrox-Py dedicata alla manipolazione e al movimento dei dati. Invece di dover riscrivere la logica per l'estrazione e il caricamento dei dati su ogni progetto, questo modulo ti fornisce dei `Connector` agnostici (es. S3, CSV) e un `PipelineOrchestrator` per mettere in sequenza i job di trasformazione.
+## 3. Target Audience (Who is it for?)
+This package is built for Data Engineers and backend developers who need to quickly stand up a Data Platform for ingestion, parsing, and bulk loading of large datasets (like CSV or JSON) into Data Lakes or Object Storage (such as Amazon S3, MinIO, or Google Cloud Storage).
 
-## 2. Perché usare Ferrox-Py-Utils? (Filosofia)
-L'ingegneria dei dati soffre spesso di "copia-incolla selvaggio". L'obiettivo qui è l'**agnosticismo**. Tutto ciò che sviluppiamo, che non è logica di dominio puro, deve poter essere riutilizzato in futuri progetti. 
-Invece di costruire monolitici script ETL, utilizziamo un approccio a "matrioska", dove piccoli task isolati vengono iniettati nell'orchestratore di pipeline.
+## 4. Architecture (How does it work?)
+The data architecture rests on three pillars:
+- **Connectors**: Classes inheriting from an abstract `BaseConnector` to standardize streaming I/O operations (Read/Write/Delete), entirely isolating the pipeline from the specific storage vendor.
+- **PipelineOrchestrator**: A linear execution engine that passes a shared state (`context`) through a sequence of nodes (steps), ensuring proper error isolation and retry mechanics.
+- **Schema Registry**: Native integration with Pydantic to register and enforce strict validation on datasets in transit, ensuring corrupted data never enters the database.
 
-## 3. A chi si rivolge?
-È pensato per **Data Engineer** e sviluppatori backend che devono tirar su in breve tempo una Data Platform per l'ingestion, il parsing e il caricamento di grossi file CSV, JSON o formati binari su Object Storage (come Amazon S3 o MinIO).
-
-## 4. Come funziona? (Architettura)
-L'architettura dei dati si basa su due pilastri:
-- **Connectors**: Classi ereditate da una base astratta (`BaseConnector`) per standardizzare operazioni di I/O (Lettura/Scrittura/Cancellazione) in streaming.
-- **PipelineOrchestrator**: Un motore di esecuzione lineare che prende in input uno stato condiviso (`context`), esegue i vari nodi in sequenza, e garantisce il corretto isolamento degli errori.
-- **Schema Registry**: Supporto nativo (via Pydantic) per registrare e validare la conformità dei dataset in transito.
-
-## 5. Come si installa?
-Assicurati di utilizzare Python 3.11+.
+## 5. Installation / Setup
+Ensure you are using Python 3.11+. The package installs basic dependencies, but you may need to install specific data drivers (like `boto3` or `pandas`) depending on the connectors you intend to use.
 
 ```bash
-# Il pacchetto core è un prerequisito concettuale
-pip install -e .
+pip install ferrox-py-utils
+# Optional extensions:
+# pip install boto3 pandas
 ```
 
-Dipendenze primarie installate dal modulo:
-- `boto3` (per le interazioni con i servizi S3 compatibili)
-- `pandas` (per l'elaborazione rapida di dataframe)
-
-## 6. Come si usa? (Quickstart)
-
+## 6. Quickstart (Usage)
 ```python
-from ferrox_py_utils.connectors.s3 import S3Connector
 from ferrox_py_utils.connectors.csv import CsvConnector
 from ferrox_py_utils.pipelines.orchestrator import PipelineOrchestrator
 
-# 1. Configurazione
-s3_connector = S3Connector(
-    endpoint_url="http://localhost:9000",
-    access_key="minioadmin",
-    secret_key="minioadmin",
-    bucket_name="bronze-layer"
-)
-csv_connector = CsvConnector(file_path="/tmp/dati.csv")
+# 1. Setup the agnostic connector
+csv_connector = CsvConnector(file_path="/tmp/data.csv")
 
-# 2. Creazione Pipeline
-def step_leggi_da_csv(ctx):
-    ctx['dati'] = csv_connector.read()
-    print("CSV Letto con successo!")
+# 2. Define isolated pipeline steps
+def step_read_csv(ctx):
+    ctx['data'] = csv_connector.read()
     return ctx
 
-def step_salva_su_s3(ctx):
-    # Logica di upload in streaming
-    s3_connector.write(f"backup/dati.csv", b"dati finti per ora")
+def step_transform(ctx):
+    # Transform logic here...
+    ctx['data'] = [row for row in ctx['data'] if row.get("active")]
     return ctx
 
-# 3. Esecuzione
+# 3. Orchestrate and execute
 orchestrator = PipelineOrchestrator()
-orchestrator.add_step("Lettura Dati", step_leggi_da_csv)
-orchestrator.add_step("Salvataggio Dati", step_salva_su_s3)
+orchestrator.add_step("Read Data", step_read_csv)
+orchestrator.add_step("Clean Data", step_transform)
 
-context = orchestrator.execute()
+final_context = orchestrator.execute()
+print(f"Processed {len(final_context['data'])} records.")
 ```
 
-## 7. L'Ecosistema Ferrox-Py
-Questo modulo si integra perfettamente con:
-- ⚡ [ferrox-py](../ferrox-py) - Sfrutta la Dependency Injection per instanziare i Connector globalmente.
-- 🔒 [ferrox-py-auth](../ferrox-py-auth) - Utilizza il RBAC per definire chi può lanciare la pipeline.
+## 7. Ecosystem Integration
+This module is fully integrated with the core `ferrox-py` ecosystem:
+- **Core (IoC Container)**: The framework's Dependency Injection container is used to instantiate Connectors globally as Singletons, meaning you only initialize your S3 credentials once.
+- **AuthModule (ferrox-py-auth)**: RBAC can be utilized to restrict which users or system roles are authorized to trigger specific data pipelines via the API Gateway.
