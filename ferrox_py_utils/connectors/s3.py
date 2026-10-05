@@ -9,11 +9,11 @@ class S3Connector(DataConnector):
         self.path = path
         # Would inject aioboto3 session here
 
-    async def connect(self):
+    async def connect(self) -> None:
         print(f"Connecting to S3 Bucket: {self.bucket}...")
         pass
 
-    async def extract(self, query: str = None) -> AsyncGenerator[Any, None]:
+    async def extract(self, query: str | None = None) -> AsyncGenerator[Any, None]:
         print(f"Extracting streaming chunks from s3://{self.bucket}/{self.path}")
         # Mock streaming chunks
         yield {"chunk_id": 1, "data": b"mock_data"}
@@ -22,5 +22,5 @@ class S3Connector(DataConnector):
         print(f"Uploading chunk to s3://{self.bucket}/{self.path}")
         return True
 
-    async def close(self):
+    async def close(self) -> None:
         pass

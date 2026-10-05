@@ -10,11 +10,11 @@ class CsvConnector(DataConnector):
         self.file_path = file_path
         self._file = None
 
-    async def connect(self):
+    async def connect(self) -> None:
         # In a real app we'd keep it open for stream
         pass
 
-    async def extract(self, query: str = None) -> AsyncGenerator[dict, None]:
+    async def extract(self, query: str | None = None) -> AsyncGenerator[Any, None]:
         async with aiofiles.open(self.file_path, mode='r', encoding='utf-8') as f:
             header = None
             async for line in f:
@@ -31,5 +31,5 @@ class CsvConnector(DataConnector):
                 await f.write(",".join(str(v) for v in data.values()) + "\n")
         return True
 
-    async def close(self):
+    async def close(self) -> None:
         pass
