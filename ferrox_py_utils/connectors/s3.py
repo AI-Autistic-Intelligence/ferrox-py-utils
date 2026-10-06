@@ -1,6 +1,10 @@
-from typing import AsyncGenerator, Any
-from .base import DataConnector
+from collections.abc import AsyncGenerator
+from typing import Any
+
 from ferrox_py.core.provider import injectable
+
+from .base import DataConnector
+
 
 @injectable()
 class S3Connector(DataConnector):
@@ -11,7 +15,6 @@ class S3Connector(DataConnector):
 
     async def connect(self) -> None:
         print(f"Connecting to S3 Bucket: {self.bucket}...")
-        pass
 
     async def extract(self, query: str | None = None) -> AsyncGenerator[Any, None]:
         print(f"Extracting streaming chunks from s3://{self.bucket}/{self.path}")

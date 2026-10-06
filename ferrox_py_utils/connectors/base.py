@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import AsyncGenerator, Any
+from collections.abc import AsyncGenerator
+from typing import Any
+
 
 class DataConnector(ABC):
     @abstractmethod

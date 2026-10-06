@@ -1,19 +1,21 @@
-from typing import Dict, Type, Any
-from pydantic import create_model, BaseModel, ValidationError
-from ferrox_py.core.provider import injectable
+from typing import Any
+
 from ferrox_py.core.errors import FerroxError
+from ferrox_py.core.provider import injectable
+from pydantic import BaseModel, ValidationError, create_model
+
 
 @injectable()
 class SchemaRegistry:
     def __init__(self) -> None:
-        self._schemas: Dict[str, Type[BaseModel]] = {}
+        self._schemas: dict[str, type[BaseModel]] = {}
 
-    def register_schema(self, name: str, schema_def: Dict[str, Any]) -> None:
+    def register_schema(self, name: str, schema_def: dict[str, Any]) -> None:
         model = create_model(name, **schema_def)
         self._schemas[name] = model
         print(f"Schema '{name}' registered.")
 
-    def validate(self, name: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate(self, name: str, data: dict[str, Any]) -> dict[str, Any]:
         if name not in self._schemas:
             raise FerroxError(message=f"Schema {name} not found", status_code=404)
             

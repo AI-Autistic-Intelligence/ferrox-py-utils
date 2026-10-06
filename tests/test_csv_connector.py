@@ -1,7 +1,10 @@
-import pytest
 import os
+
 import aiofiles
+import pytest
+
 from ferrox_py_utils.connectors.csv import CsvConnector
+
 
 @pytest.fixture
 def test_csv_path():

@@ -1,8 +1,11 @@
-import csv
+from collections.abc import AsyncGenerator
+from typing import Any
+
 import aiofiles
-from typing import AsyncGenerator, Any
-from .base import DataConnector
 from ferrox_py.core.provider import injectable
+
+from .base import DataConnector
+
 
 @injectable()
 class CsvConnector(DataConnector):

@@ -1,6 +1,8 @@
 import pytest
-from ferrox_py_utils.schemas.registry import SchemaRegistry
 from ferrox_py.core.errors import FerroxError
+
+from ferrox_py_utils.schemas.registry import SchemaRegistry
+
 
 def test_schema_registry_success():
     registry = SchemaRegistry()

@@ -1,7 +1,10 @@
-from typing import Callable, List, Any
 import asyncio
-from ferrox_py.core.provider import injectable
+from collections.abc import Callable
+from typing import Any
+
 from ferrox_py.core.errors import FerroxError
+from ferrox_py.core.provider import injectable
+
 
 class PipelineStep:
     def __init__(self, name: str, execute_fn: Callable[[Any], Any]):
@@ -10,7 +13,7 @@ class PipelineStep:
 
 @injectable()
 class PipelineOrchestrator:
-    async def execute_pipeline(self, name: str, initial_data: Any, steps: List[PipelineStep]) -> Any:
+    async def execute_pipeline(self, name: str, initial_data: Any, steps: list[PipelineStep]) -> Any:
         print(f"Starting Pipeline: {name}")
         current_data = initial_data
         
